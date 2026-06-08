@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
@@ -12,6 +12,9 @@ const OrderFilesPage = () => {
   const [uploading, setUploading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [order, setOrder] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const reviewRef = useRef(null);
 
   useEffect(() => {
     fetchFiles();
@@ -59,6 +62,29 @@ const OrderFilesPage = () => {
       console.error(err);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleConfirmComplete = async () => {
+    try {
+      await API.put(`/orders/${orderId}/status?status=COMPLETED`);
+      setOrder({ ...order, status: 'COMPLETED' });
+      setSuccessMsg('Order selesai! Silakan berikan rating.');
+      setTimeout(() => {
+        reviewRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReview = async () => {
+    try {
+      await API.post(`/reviews/${order?.service?.id}`, { rating, comment });
+      setComment('');
+      setSuccessMsg('Review berhasil dikirim! Terima kasih.');
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -124,7 +150,7 @@ const OrderFilesPage = () => {
         )}
 
         {/* FILE LIST */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6">
           <h3 className="font-bold text-white mb-4">File ({orderFiles.length})</h3>
           {orderFiles.length === 0 ? (
             <p className="text-gray-500 text-center py-8">Belum ada file yang diupload.</p>
@@ -155,6 +181,58 @@ const OrderFilesPage = () => {
             </div>
           )}
         </div>
+
+        {/* KONFIRMASI CLIENT */}
+        {user?.role === 'CLIENT' && order?.status === 'COMPLETED_BY_FREELANCER' && (
+          <div className="bg-blue-900/30 border border-blue-800 rounded-3xl p-8 mb-6">
+            <h3 className="text-xl font-bold mb-2">Konfirmasi Penyelesaian</h3>
+            <p className="text-gray-400 text-sm mb-6">Freelancer telah menyelesaikan pesanan kamu. Apakah kamu sudah puas?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmComplete}
+                className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition"
+              >
+                ✅ Ya, Sudah Selesai
+              </button>
+              <button
+                onClick={() => navigate(`/chat/${order.service?.freelancer?.id}`)}
+                className="flex-1 border border-zinc-700 text-gray-300 py-3 rounded-full hover:border-white hover:text-white transition"
+              >
+                💬 Diskusi
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* REVIEW FORM */}
+        {user?.role === 'CLIENT' && order?.status === 'COMPLETED' && (
+          <div ref={reviewRef} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-6">
+            <h3 className="text-xl font-bold mb-6">⭐ Leave a Review</h3>
+            <div className="flex gap-3 mb-6">
+              {[1,2,3,4,5].map((star) => (
+                <button key={star} type="button" onClick={() => setRating(star)} className="transition">
+                  <svg width="36" height="36" viewBox="0 0 24 24"
+                    fill={star <= rating ? '#facc15' : 'none'}
+                    stroke={star <= rating ? '#facc15' : '#52525b'}
+                    strokeWidth="1.5"
+                  >
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+            <textarea
+              placeholder="Write your review..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              className="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition mb-4"
+            />
+            <button onClick={handleReview} className="w-full bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition">
+              Submit Review
+            </button>
+          </div>
+        )}
 
       </div>
     </div>

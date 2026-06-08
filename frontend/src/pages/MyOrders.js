@@ -89,11 +89,11 @@ const MyOrders = () => {
                   <div className="flex flex-col items-end gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       order.status === 'PENDING' ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-800' :
-                      order.status === 'ACCEPTED' ? 'bg-green-900/50 text-green-400 border border-green-800' :
+                      order.status === 'ACCEPTED' ? 'bg-orange-900/50 text-orange-400 border border-orange-800' :
                       order.status === 'COMPLETED' ? 'bg-blue-900/50 text-blue-400 border border-blue-800' :
                       'bg-red-900/50 text-red-400 border border-red-800'
                     }`}>
-                      {order.status}
+                      {order.status === 'ACCEPTED' ? '🔄 MASIH PROSES' : order.status}
                     </span>
                     <button
                       onClick={() => navigate(`/chat/${order.service?.freelancer?.id}`)}
