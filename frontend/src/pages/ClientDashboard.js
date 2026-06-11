@@ -93,6 +93,9 @@ const ClientDashboard = () => {
           <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
+            <button onClick={() => navigate('/topup')} className="text-gray-400 hover:text-white text-sm transition">
+  💳 Top Up
+</button>
             <button onClick={() => navigate('/messages')} className="relative text-xl hover:opacity-70 transition">
               ✈️
               {unreadCount > 0 && (

@@ -38,6 +38,9 @@ const MyOrders = () => {
           <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
+                        <button onClick={() => navigate('/topup')} className="text-gray-400 hover:text-white text-sm transition">
+  💳 Top Up
+</button>
             <button onClick={() => navigate('/messages')} className="text-xl hover:opacity-70 transition">✈️</button>
             <button onClick={() => navigate('/client/dashboard')} className="text-gray-400 hover:text-white text-sm transition">Dashboard</button>
             <button onClick={handleLogout} className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-sm hover:border-white hover:text-white transition">
@@ -49,7 +52,7 @@ const MyOrders = () => {
 
       <div className="max-w-4xl mx-auto px-8 pt-32 pb-16">
 
-        <div className="mb-12">
+        <div className="mb-12">   
           <h1 className="text-4xl font-bold mb-2">My Orders</h1>
           <p className="text-gray-400">Track all your orders here.</p>
         </div>
@@ -87,13 +90,11 @@ const MyOrders = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      order.status === 'PENDING' ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-800' :
-                      order.status === 'ACCEPTED' ? 'bg-orange-900/50 text-orange-400 border border-orange-800' :
-                      order.status === 'COMPLETED' ? 'bg-blue-900/50 text-blue-400 border border-blue-800' :
-                      'bg-red-900/50 text-red-400 border border-red-800'
-                    }`}>
-                      {order.status === 'ACCEPTED' ? '🔄 MASIH PROSES' : order.status}
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold">
+                      {order.status === 'PENDING' ? '🔄 MASIH PROSES' :
+                       order.status === 'FILE_SENT' ? '📁 FILE DIKIRIM' :
+                       order.status === 'COMPLETED_BY_FREELANCER' ? '⏳ MENUNGGU FREELANCER' :
+                       order.status === 'COMPLETED' ? '✅ SELESAI' : order.status}
                     </span>
                     <button
                       onClick={() => navigate(`/chat/${order.service?.freelancer?.id}`)}
@@ -102,7 +103,7 @@ const MyOrders = () => {
                       💬 Chat
                     </button>
 
-                    {(order.status === 'ACCEPTED' || order.status === 'COMPLETED_BY_FREELANCER' || order.status === 'COMPLETED') && (
+                    {(order.status === 'ACCEPTED' || order.status === 'FILE_SENT' || order.status === 'COMPLETED_BY_FREELANCER' || order.status === 'COMPLETED') && (
   <button
     onClick={() => navigate(`/order-files/${order.id}`)}
     className="border border-zinc-700 text-gray-300 px-4 py-1 rounded-full text-xs hover:border-white hover:text-white transition"

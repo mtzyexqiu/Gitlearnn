@@ -46,37 +46,40 @@ const OrderFilesPage = () => {
     }
   };
 
-  const handleUpload = async () => {
-    if (!uploadFile) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-      await API.post(`/order-files/${orderId}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setUploadFile(null);
-      setSuccessMsg('File berhasil diupload!');
-      fetchFiles();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUploading(false);
-    }
+  const handleViewFile = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleConfirmComplete = async () => {
-    try {
-      await API.put(`/orders/${orderId}/status?status=COMPLETED`);
-      setOrder({ ...order, status: 'COMPLETED' });
-      setSuccessMsg('Order selesai! Silakan berikan rating.');
-      setTimeout(() => {
-        reviewRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    await API.post(`/order-files/${orderId}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    await API.put(`/orders/${orderId}/status?status=FILE_SENT`);
+    setOrder({ ...order, status: 'FILE_SENT' });
+    setUploadFile(null);
+    setSuccessMsg('File berhasil diupload! Client akan menerima notifikasi.');
+    fetchFiles();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setUploading(false);
+  }
+};
+
+const handleConfirmComplete = async () => {
+  try {
+    await API.put(`/orders/${orderId}/status?status=COMPLETED_BY_FREELANCER`);
+    setOrder({ ...order, status: 'COMPLETED_BY_FREELANCER' });
+    setSuccessMsg('Konfirmasi diterima! Menunggu freelancer menyelesaikan pesanan.');
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleReview = async () => {
     try {
@@ -167,15 +170,12 @@ const OrderFilesPage = () => {
                       </p>
                     </div>
                   </div>
-                  <a
-                    href={file.fileUrl}
-                    download={file.fileName}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-white text-black px-4 py-2 rounded-full text-xs font-semibold hover:bg-gray-200 transition"
+                  <button
+                    onClick={() => handleViewFile(file.fileUrl)}
+                    className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-xs hover:border-white hover:text-white transition"
                   >
-                    ⬇️ Download
-                  </a>
+                    👁️ Lihat
+                  </button>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ const OrderFilesPage = () => {
         </div>
 
         {/* KONFIRMASI CLIENT */}
-        {user?.role === 'CLIENT' && order?.status === 'COMPLETED_BY_FREELANCER' && (
+{user?.role === 'CLIENT' && order?.status === 'FILE_SENT' && (
           <div className="bg-blue-900/30 border border-blue-800 rounded-3xl p-8 mb-6">
             <h3 className="text-xl font-bold mb-2">Konfirmasi Penyelesaian</h3>
             <p className="text-gray-400 text-sm mb-6">Freelancer telah menyelesaikan pesanan kamu. Apakah kamu sudah puas?</p>

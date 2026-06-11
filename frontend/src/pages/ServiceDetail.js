@@ -16,6 +16,8 @@ const ServiceDetail = () => {
   const [rating, setRating] = useState(5);
   const [successMsg, setSuccessMsg] = useState('');
   const [myOrder, setMyOrder] = useState(undefined);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+const [balance, setBalance] = useState(0);
   const [myOrderAsFreelancer, setMyOrderAsFreelancer] = useState(null);
   const [orderFiles, setOrderFiles] = useState([]);
   const [uploadFile, setUploadFile] = useState(null);
@@ -30,6 +32,15 @@ const ServiceDetail = () => {
     if (user?.role === 'CLIENT') fetchMyOrder();
     if (user?.role === 'FREELANCER') fetchMyOrderAsFreelancer();
   }, [user]);
+
+  const fetchBalance = async () => {
+  try {
+    const res = await API.get('/users/me');
+    setBalance(res.data.balance || 0);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const fetchMyOrder = async () => {
     try {
@@ -151,14 +162,12 @@ const ServiceDetail = () => {
                   <p className="text-gray-500 text-xs">Uploaded by {file.uploader?.name}</p>
                 </div>
               </div>
-                            <a                href={file.fileUrl}
-                download={file.fileName}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-white text-black px-4 py-2 rounded-full text-xs font-semibold hover:bg-gray-200 transition"
+              <button
+                onClick={() => window.open(file.fileUrl, '_blank', 'noopener,noreferrer')}
+                className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-xs hover:border-white hover:text-white transition"
               >
-                ⬇️ Download
-              </a>
+                👁️ Lihat
+              </button>
             </div>
           ))}
         </div>
@@ -299,9 +308,12 @@ const ServiceDetail = () => {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={handleOrder} className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition">
-                {hasNoOrder ? 'Order Now' : 'Order Already Sent'}
-              </button>
+<button
+  onClick={() => hasNoOrder && setShowPaymentPopup(true)}
+  className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition"
+>
+  {hasNoOrder ? 'Order Now' : '✅ Order Sent'}
+</button>
               <button onClick={() => navigate(`/chat/${service.freelancer?.id}`)}
                 className="flex-1 border border-zinc-700 text-gray-300 py-3 rounded-full hover:border-white hover:text-white transition">
                 💬 Chat
@@ -387,6 +399,62 @@ const ServiceDetail = () => {
         </div>
 
       </div>
+
+      {/* PAYMENT POPUP */}
+{showPaymentPopup && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md">
+      <h3 className="text-xl font-bold mb-2">Konfirmasi Pembayaran</h3>
+      <p className="text-gray-400 text-sm mb-6">Bayar 50% di awal untuk memulai pesanan.</p>
+
+      <div className="space-y-3 mb-6">
+        <div className="flex justify-between">
+          <p className="text-gray-400 text-sm">Harga Jasa</p>
+          <p className="text-white font-semibold">Rp {currentOffer.toLocaleString()}</p>
+        </div>
+        <div className="flex justify-between">
+          <p className="text-gray-400 text-sm">Bayar Sekarang (50%)</p>
+          <p className="text-white font-bold">Rp {Math.round(currentOffer * 0.5).toLocaleString()}</p>
+        </div>
+        <div className="flex justify-between">
+          <p className="text-gray-400 text-sm">Sisa Bayar Nanti (50%)</p>
+          <p className="text-gray-400">Rp {Math.round(currentOffer * 0.5).toLocaleString()}</p>
+        </div>
+        <div className="border-t border-zinc-700 pt-3 flex justify-between">
+          <p className="text-gray-400 text-sm">Saldo Kamu</p>
+          <p className={`font-semibold ${balance >= currentOffer * 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+            Rp {balance.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {balance < currentOffer * 0.5 ? (
+        <div className="bg-red-900/30 border border-red-800 rounded-2xl p-4 mb-4">
+          <p className="text-red-400 text-sm">Saldo tidak cukup! Top up dulu di halaman profil.</p>
+        </div>
+      ) : null}
+
+      <div className="flex gap-3">
+        <button
+          onClick={async () => {
+            await handleOrder();
+            setShowPaymentPopup(false);
+          }}
+          disabled={balance < currentOffer * 0.5}
+          className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+        >
+          💳 Bayar Rp {Math.round(currentOffer * 0.5).toLocaleString()}
+        </button>
+        <button
+          onClick={() => setShowPaymentPopup(false)}
+          className="flex-1 border border-zinc-700 text-gray-300 py-3 rounded-full hover:border-white hover:text-white transition"
+        >
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

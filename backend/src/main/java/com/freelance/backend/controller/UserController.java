@@ -1,12 +1,21 @@
 package com.freelance.backend.controller;
 
-import com.freelance.backend.model.User;
-import com.freelance.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.freelance.backend.model.User;
+import com.freelance.backend.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,4 +36,17 @@ public class UserController {
         if (body.containsKey("bio")) user.setBio(body.get("bio"));
         return ResponseEntity.ok(userRepository.save(user));
     }
+
+    @GetMapping("/me")
+public ResponseEntity<User> getMe(Authentication auth) {
+    User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+    return ResponseEntity.ok(user);
+}
+
+@PostMapping("/topup")
+public ResponseEntity<User> topUp(@RequestBody Map<String, Double> body, Authentication auth) {
+    User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+    user.setBalance(user.getBalance() + body.get("amount"));
+    return ResponseEntity.ok(userRepository.save(user));
+}
 }

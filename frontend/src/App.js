@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import EditProfile from './pages/EditProfile';
 import CheckoutPage from './pages/CheckoutPage'; // Komponen yang tadi kita buat
 import OrderFilesPage from './pages/OrderFilesPage';
+import TopUpPage from './pages/TopUpPage';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth();
@@ -67,6 +68,12 @@ function AppRoutes() {
       <Route path="/order-files/:orderId" element={
         <ProtectedRoute><OrderFilesPage /></ProtectedRoute>
       } />
+
+      <Route path="/topup" element={
+  <ProtectedRoute><TopUpPage /></ProtectedRoute>
+} />
+
+      
 
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" />} />

@@ -38,6 +38,8 @@ public class Order {
 
     private Double offeredPrice;
 
+    private Double downPayment;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 

@@ -574,14 +574,14 @@ const handleOrderStatus = async (orderId, status) => {
                                       </button>
                                     </>
                                   )}
-                                  {order.status === 'ACCEPTED' && (
-                                    <button
-                                      onClick={() => handleOrderStatus(order.id, 'COMPLETED_BY_FREELANCER')}
-                                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition shadow-lg"
-                                    >
-                                      ✅ Mark Complete
-                                    </button>
-                                  )}
+                                  {order.status === 'COMPLETED_BY_FREELANCER' && (
+  <button
+    onClick={() => handleOrderStatus(order.id, 'COMPLETED')}
+    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition shadow-lg"
+  >
+    ✅ Selesaikan Pesanan
+  </button>
+)}
 
                                   {(order.status === 'ACCEPTED' || order.status === 'COMPLETED_BY_FREELANCER' || order.status === 'COMPLETED') && (
   <button

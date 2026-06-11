@@ -1,16 +1,26 @@
 package com.freelance.backend.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.freelance.backend.model.Order;
 import com.freelance.backend.model.Service;
 import com.freelance.backend.model.User;
 import com.freelance.backend.repository.OrderRepository;
 import com.freelance.backend.repository.ServiceRepository;
 import com.freelance.backend.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -33,17 +43,30 @@ public class OrderController {
         return ResponseEntity.ok(orderRepository.findByServiceFreelancerId(user.getId()));
     }
 
-    @PostMapping("/{serviceId}")
-    public ResponseEntity<Order> createOrder(@PathVariable Long serviceId,
-                                             @RequestBody Order order,
-                                             Authentication auth) {
-        User client = userRepository.findByEmail(auth.getName()).orElseThrow();
-        Service service = serviceRepository.findById(serviceId).orElseThrow();
-        order.setClient(client);
-        order.setService(service);
-        order.setPrice(service.getPrice());
-        return ResponseEntity.ok(orderRepository.save(order));
+@PostMapping("/{serviceId}")
+public ResponseEntity<?> createOrder(@PathVariable Long serviceId,
+                                      @RequestBody Order order,
+                                      Authentication auth) {
+    User client = userRepository.findByEmail(auth.getName()).orElseThrow();
+    Service service = serviceRepository.findById(serviceId).orElseThrow();
+
+    double price = order.getOfferedPrice() != null ? order.getOfferedPrice() : service.getPrice();
+    double downPayment = price * 0.5;
+
+    if (client.getBalance() < downPayment) {
+        return ResponseEntity.badRequest().body("Saldo tidak cukup! Saldo kamu: Rp " + client.getBalance().longValue() + ", Dibutuhkan: Rp " + (long) downPayment);
     }
+
+    client.setBalance(client.getBalance() - downPayment);
+    userRepository.save(client);
+
+    order.setClient(client);
+    order.setService(service);
+    order.setPrice(price);
+    order.setDownPayment(downPayment);
+
+    return ResponseEntity.ok(orderRepository.save(order));
+}
 
     @PutMapping("/{id}/status")
     public ResponseEntity<Order> updateStatus(@PathVariable Long id,
