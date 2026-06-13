@@ -46,7 +46,9 @@ public ResponseEntity<User> getMe(Authentication auth) {
 @PostMapping("/topup")
 public ResponseEntity<User> topUp(@RequestBody Map<String, Double> body, Authentication auth) {
     User user = userRepository.findByEmail(auth.getName()).orElseThrow();
-    user.setBalance(user.getBalance() + body.get("amount"));
+    Double currentBalance = user.getBalance() != null ? user.getBalance() : 0.0;
+    user.setBalance(currentBalance + body.get("amount"));
     return ResponseEntity.ok(userRepository.save(user));
+
 }
 }

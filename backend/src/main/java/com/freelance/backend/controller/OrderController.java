@@ -75,4 +75,24 @@ public ResponseEntity<?> createOrder(@PathVariable Long serviceId,
         order.setStatus(Order.OrderStatus.valueOf(status));
         return ResponseEntity.ok(orderRepository.save(order));
     }
+
+    @PostMapping("/{id}/pay-remaining")
+public ResponseEntity<?> payRemaining(@PathVariable Long id, Authentication auth) {
+    User client = userRepository.findByEmail(auth.getName()).orElseThrow();
+    Order order = orderRepository.findById(id).orElseThrow();
+
+    double remaining = order.getPrice() * 0.5;
+
+    if (client.getBalance() < remaining) {
+        return ResponseEntity.badRequest().body("Saldo tidak cukup!");
+    }
+
+    client.setBalance(client.getBalance() - remaining);
+    userRepository.save(client);
+
+    order.setStatus(Order.OrderStatus.COMPLETED_BY_FREELANCER);
+    orderRepository.save(order);
+
+    return ResponseEntity.ok(order);
+}
 }

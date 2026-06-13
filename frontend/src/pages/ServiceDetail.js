@@ -309,7 +309,7 @@ const [balance, setBalance] = useState(0);
 
             <div className="flex gap-3">
 <button
-  onClick={() => hasNoOrder && setShowPaymentPopup(true)}
+onClick={() => { if (hasNoOrder) { fetchBalance(); setShowPaymentPopup(true); } }}
   className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition"
 >
   {hasNoOrder ? 'Order Now' : '✅ Order Sent'}
@@ -428,11 +428,17 @@ const [balance, setBalance] = useState(0);
         </div>
       </div>
 
-      {balance < currentOffer * 0.5 ? (
-        <div className="bg-red-900/30 border border-red-800 rounded-2xl p-4 mb-4">
-          <p className="text-red-400 text-sm">Saldo tidak cukup! Top up dulu di halaman profil.</p>
-        </div>
-      ) : null}
+{balance < currentOffer * 0.5 ? (
+  <div className="bg-red-900/30 border border-red-800 rounded-2xl p-4 mb-4">
+    <p className="text-red-400 text-sm mb-3">Saldo tidak cukup!</p>
+    <button
+      onClick={() => { setShowPaymentPopup(false); navigate('/topup'); }}
+      className="w-full bg-white text-black py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition"
+    >
+      💳 Top Up Sekarang
+    </button>
+  </div>
+) : null}
 
       <div className="flex gap-3">
         <button

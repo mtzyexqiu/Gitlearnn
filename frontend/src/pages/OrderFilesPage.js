@@ -15,11 +15,14 @@ const OrderFilesPage = () => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const reviewRef = useRef(null);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+const [balance, setBalance] = useState(0);
 
-  useEffect(() => {
-    fetchFiles();
-    fetchOrder();
-  }, []);
+useEffect(() => {
+  fetchFiles();
+  fetchOrder();
+  fetchBalance();
+}, []);
 
   const fetchFiles = async () => {
     try {
@@ -45,6 +48,15 @@ const OrderFilesPage = () => {
       console.error(err);
     }
   };
+
+  const fetchBalance = async () => {
+  try {
+    const res = await API.get('/users/me');
+    setBalance(res.data.balance || 0);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleViewFile = (url) => {
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -75,7 +87,7 @@ const handleConfirmComplete = async () => {
   try {
     await API.put(`/orders/${orderId}/status?status=COMPLETED_BY_FREELANCER`);
     setOrder({ ...order, status: 'COMPLETED_BY_FREELANCER' });
-    setSuccessMsg('Konfirmasi diterima! Menunggu freelancer menyelesaikan pesanan.');
+    setShowPaymentPopup(true);
   } catch (err) {
     console.error(err);
   }
@@ -235,6 +247,68 @@ const handleConfirmComplete = async () => {
         )}
 
       </div>
+
+      {/* PAYMENT POPUP SISA */}
+{showPaymentPopup && (
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-4">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md">
+      <h3 className="text-xl font-bold mb-2">💳 Pembayaran Sisa</h3>
+      <p className="text-gray-400 text-sm mb-6">Bayar sisa 50% untuk menyelesaikan pesanan.</p>
+
+      <div className="space-y-3 mb-6">
+        <div className="flex justify-between">
+          <p className="text-gray-400 text-sm">Sisa Pembayaran (50%)</p>
+          <p className="text-white font-bold">Rp {Math.round((order?.price || 0) * 0.5).toLocaleString()}</p>
+        </div>
+        <div className="border-t border-zinc-700 pt-3 flex justify-between">
+          <p className="text-gray-400 text-sm">Saldo Kamu</p>
+          <p className={`font-semibold ${balance >= (order?.price || 0) * 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+            Rp {balance.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {balance < (order?.price || 0) * 0.5 ? (
+        <div className="bg-red-900/30 border border-red-800 rounded-2xl p-4 mb-4">
+          <p className="text-red-400 text-sm mb-3">Saldo tidak cukup!</p>
+          <button
+            onClick={() => { setShowPaymentPopup(false); navigate('/topup'); }}
+            className="w-full bg-white text-black py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition"
+          >
+            💳 Top Up Sekarang
+          </button>
+        </div>
+      ) : null}
+
+      <div className="flex gap-3">
+        <button
+          onClick={async () => {
+            try {
+              await API.post(`/orders/${orderId}/pay-remaining`);
+              setOrder({ ...order, status: 'COMPLETED_BY_FREELANCER' });
+              setShowPaymentPopup(false);
+              setSuccessMsg('Pembayaran berhasil! Menunggu freelancer konfirmasi.');
+              fetchBalance();
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+          disabled={balance < (order?.price || 0) * 0.5}
+          className="flex-1 bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+        >
+          💳 Bayar Rp {Math.round((order?.price || 0) * 0.5).toLocaleString()}
+        </button>
+        <button
+          onClick={() => setShowPaymentPopup(false)}
+          className="flex-1 border border-zinc-700 text-gray-300 py-3 rounded-full hover:border-white hover:text-white transition"
+        >
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
