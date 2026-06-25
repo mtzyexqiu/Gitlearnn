@@ -18,6 +18,7 @@ import EditProfile from './pages/EditProfile';
 import CheckoutPage from './pages/CheckoutPage'; // Komponen yang tadi kita buat
 import OrderFilesPage from './pages/OrderFilesPage';
 import TopUpPage from './pages/TopUpPage';
+import FilePreviewPage from './pages/FilePreviewPage';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth();
@@ -67,6 +68,10 @@ function AppRoutes() {
       } />
       <Route path="/order-files/:orderId" element={
         <ProtectedRoute><OrderFilesPage /></ProtectedRoute>
+      } />
+
+      <Route path="/preview" element={
+        <ProtectedRoute><FilePreviewPage /></ProtectedRoute>
       } />
 
       <Route path="/topup" element={

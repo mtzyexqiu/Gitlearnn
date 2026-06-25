@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import { CreditCard, Send, Home } from 'lucide-react';
 
 const MyOrders = () => {
   const { user, logout } = useAuth();
@@ -38,11 +39,15 @@ const MyOrders = () => {
           <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
-                        <button onClick={() => navigate('/topup')} className="text-gray-400 hover:text-white text-sm transition">
-  💳 Top Up
-</button>
-            <button onClick={() => navigate('/messages')} className="text-xl hover:opacity-70 transition">✈️</button>
-            <button onClick={() => navigate('/client/dashboard')} className="text-gray-400 hover:text-white text-sm transition">Dashboard</button>
+            <button onClick={() => navigate('/topup')} title="Top Up" aria-label="Top Up" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <CreditCard className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/messages')} title="Messages" aria-label="Messages" className="text-gray-400 hover:text-white transition p-1">
+              <Send className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/client/dashboard')} title="Dashboard" aria-label="Dashboard" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <Home className="w-5 h-5" />
+            </button>
             <button onClick={handleLogout} className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-sm hover:border-white hover:text-white transition">
               Logout
             </button>

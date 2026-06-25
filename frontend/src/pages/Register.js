@@ -6,9 +6,11 @@ import { motion } from 'framer-motion';
 
 const Register = () => {
   const [form, setForm] = useState({
-    name: '',
-    email: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     password: '',
+    confirmPassword: '',
     role: 'CLIENT',
   });
 
@@ -22,12 +24,12 @@ const Register = () => {
   const handleChange = (e) => {
     let { name, value } = e.target;
 
-    // Logika khusus untuk email: otomatis tambah @gmail.com
-    if (name === 'email') {
-      // Menghapus @gmail.com yang ada agar tidak duplikat saat edit
-      const cleanValue = value.replace('@gmail.com', '');
-      // Menambahkan @gmail.com kembali jika ada teks yang diketik
-      value = cleanValue ? `${cleanValue}@gmail.com` : '';
+    if (name === 'username') {
+      value = value.replace(/[^a-zA-Z0-9._-]/g, '');
+    }
+
+    if (name === 'password' || name === 'confirmPassword') {
+      value = value.replace(/\D/g, '').slice(0, 6);
     }
 
     setForm({
@@ -41,8 +43,37 @@ const Register = () => {
     setLoading(true);
     setError('');
 
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      setError('Isi nama depan dan nama belakang dengan lengkap.');
+      setLoading(false);
+      return;
+    }
+
+    if (!form.username) {
+      setError('Isi email dengan lengkap.');
+      setLoading(false);
+      return;
+    }
+
+    if (form.password.length !== 6) {
+      setError('Password harus 6 digit.');
+      setLoading(false);
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError('Password dan konfirmasi password tidak cocok.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await API.post('/auth/register', form);
+      const res = await API.post('/auth/register', {
+        name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+        email: `${form.username}@gmail.com`,
+        password: form.password,
+        role: form.role,
+      });
 
       login(
         {
@@ -99,38 +130,77 @@ const Register = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Nama */}
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Username"
-            className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-sm text-gray-400 mb-2 block"></span>
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                placeholder="First Name"
+                className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
+                required
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm text-gray-400 mb-2 block"></span>
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName}
+                onChange={handleChange}
+                placeholder="Last Name"
+                className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
+                required
+              />
+            </label>
+          </div>
 
-          {/* Email dengan Auto-Complete */}
-          <input
-            type="text" // Menggunakan text agar penambahan string lebih fleksibel
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Masukkan username email anda"
-            className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
-            required
-          />
+          <label className="block">
+            <span className="text-sm text-gray-400 mb-2 block"></span>
+            <div className="flex items-center gap-3 bg-transparent border border-zinc-700 rounded-2xl px-4 py-3 focus-within:border-white transition">
+              <input
+                type="text"
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                placeholder="Your Email"
+                className="flex-1 bg-transparent outline-none text-white placeholder:text-zinc-500"
+                required
+              />
+              <span className="text-gray-400">@gmail.com</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2"></p>
+          </label>
 
-          {/* Password */}
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-sm text-gray-400 mb-2 block"></span>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Password (6 digit)"
+                className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-2"></p>
+            </label>
+            <label className="block">
+              <span className="text-sm text-gray-400 mb-2 block"></span>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm Password"
+                className="w-full bg-transparent border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-white transition"
+                required
+              />
+            </label>
+          </div>
 
           {/* Role Selector */}
           <div className="grid grid-cols-2 gap-5 pt-2">
@@ -195,9 +265,9 @@ const Register = () => {
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-12 pb-6">
-          Sudah punya akun?{" "}
+          Already have an account?{" "}
           <Link to="/login" className="text-white font-bold hover:underline transition-all">
-            Masuk di sini
+            Login
           </Link>
         </p>
       </motion.div>

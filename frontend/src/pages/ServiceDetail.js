@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import FilePreviewModal from '../components/FilePreviewModal';
+
+const buildFileUrl = (fileUrl) => {
+  if (!fileUrl) return '';
+  if (fileUrl.startsWith('http')) return fileUrl;
+  return `${API.defaults.baseURL.replace(/\/api$/, '')}${fileUrl}`;
+};
 
 
 const ServiceDetail = () => {
@@ -22,6 +29,7 @@ const [balance, setBalance] = useState(0);
   const [orderFiles, setOrderFiles] = useState([]);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
 
   useEffect(() => {
     fetchService();
@@ -163,7 +171,7 @@ const [balance, setBalance] = useState(0);
                 </div>
               </div>
               <button
-                onClick={() => window.open(file.fileUrl, '_blank', 'noopener,noreferrer')}
+                onClick={() => navigate(`/preview?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`)}
                 className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-xs hover:border-white hover:text-white transition"
               >
                 👁️ Lihat
@@ -252,6 +260,8 @@ const [balance, setBalance] = useState(0);
         </div>
 
         {/* ORDER */}
+        {/* File preview modal */}
+        <FilePreviewModal open={!!previewFile} file={previewFile} onClose={() => setPreviewFile(null)} />
         {user?.role === 'CLIENT' && !isLoading && (hasNoOrder || isPending) && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-6">
             <h3 className="text-xl font-bold mb-2">Place Order</h3>

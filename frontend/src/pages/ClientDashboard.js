@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import API from '../api/axios';
+import { CreditCard, Package, Send } from 'lucide-react';
 
 const ClientDashboard = () => {
   const { user, logout } = useAuth();
@@ -93,19 +94,19 @@ const ClientDashboard = () => {
           <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
-            <button onClick={() => navigate('/topup')} className="text-gray-400 hover:text-white text-sm transition">
-  💳 Top Up
-</button>
-            <button onClick={() => navigate('/messages')} className="relative text-xl hover:opacity-70 transition">
-              ✈️
+            <button onClick={() => navigate('/topup')} title="Top Up" aria-label="Top Up" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <CreditCard className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/messages')} title="Messages" aria-label="Messages" className="relative text-gray-400 hover:text-white transition p-1">
+              <Send className="w-5 h-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
             </button>
-            <button onClick={() => navigate('/my-orders')} className="text-gray-400 hover:text-white text-sm transition">
-              My Orders
+            <button onClick={() => navigate('/my-orders')} title="My Orders" aria-label="My Orders" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <Package className="w-5 h-5" />
             </button>
             <button onClick={handleLogout} className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-sm hover:border-white hover:text-white transition">
               Logout

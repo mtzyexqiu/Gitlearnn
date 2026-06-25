@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
@@ -49,6 +51,16 @@ public ResponseEntity<User> topUp(@RequestBody Map<String, Double> body, Authent
     Double currentBalance = user.getBalance() != null ? user.getBalance() : 0.0;
     user.setBalance(currentBalance + body.get("amount"));
     return ResponseEntity.ok(userRepository.save(user));
+}
 
+@PostMapping("/verify-password")
+public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> body, Authentication auth) {
+    User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+    String rawPassword = body.get("password");
+    if (passwordEncoder.matches(rawPassword, user.getPassword())) {
+        return ResponseEntity.ok(Map.of("verified", true));
+    } else {
+        return ResponseEntity.status(401).body(Map.of("error", "Invalid password"));
+    }
 }
 }

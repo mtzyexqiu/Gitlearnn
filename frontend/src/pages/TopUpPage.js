@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import VerifyAccountModal from '../components/VerifyAccountModal';
+import { CreditCard, Package, Home } from 'lucide-react';
 
 const TopUpPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const handleLogout = () => { logout(); navigate('/'); };
   const navigate = useNavigate();
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [verified, setVerified] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   useEffect(() => {
     fetchBalance();
@@ -25,6 +30,10 @@ const TopUpPage = () => {
   };
 
   const handleTopUp = async () => {
+    if (!verified) {
+      setShowVerifyModal(true);
+      return;
+    }
     if (!amount || Number(amount) <= 0) return;
     setLoading(true);
     try {
@@ -42,14 +51,25 @@ const TopUpPage = () => {
   const quickAmounts = [50000, 100000, 250000, 500000, 1000000];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className={`min-h-screen bg-black text-white transition-all duration-300 ${showVerifyModal ? 'brightness-90' : ''}`}>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-zinc-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white transition text-sm">
-            ← Back
-          </button>
-          <span className="text-lg font-bold">💳 Top Up Saldo</span>
-          <span className="text-gray-400 text-sm">{user?.name}</span>
+          <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
+          <div className="flex items-center gap-6">
+            <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
+            <button onClick={() => navigate('/topup')} title="Top Up" aria-label="Top Up" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <CreditCard className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/my-orders')} title="My Orders" aria-label="My Orders" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <Package className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/client/dashboard')} title="Dashboard" aria-label="Dashboard" className="text-gray-400 hover:text-white text-sm transition p-1">
+              <Home className="w-5 h-5" />
+            </button>
+            <button onClick={handleLogout} className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-sm hover:border-white hover:text-white transition">
+              Logout
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -103,13 +123,23 @@ const TopUpPage = () => {
           <button
             onClick={handleTopUp}
             disabled={loading || !amount || Number(amount) <= 0}
-            className="w-full bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+            className="w-full bg-white text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? 'Memproses...' : '💳 Top Up'}
+            {loading ? 'Memproses...' : (<><CreditCard className="w-5 h-5" /> Top Up</>)}
           </button>
         </div>
 
       </div>
+
+      <VerifyAccountModal 
+        open={showVerifyModal}
+        onVerified={() => {
+          setVerified(true);
+          setShowVerifyModal(false);
+          handleTopUp(); // Auto-proceed after verification
+        }}
+        onClose={() => setShowVerifyModal(false)}
+      />
     </div>
   );
 };

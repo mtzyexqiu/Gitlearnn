@@ -80,7 +80,7 @@ const Login = () => {
         </h2>
 
         <p className="text-center text-gray-400 mt-3 mb-14 text-lg">
-          Continue with your email
+          Welcome, please login to your account
         </p>
 
         {error && (
@@ -122,12 +122,12 @@ const Login = () => {
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-12 pb-6">
-          Belum punya akun?{" "}
+          Don't have an account yet?{" "}
           <Link
             to="/register"
-            className="text-white font-bold hover:underline transition-all"
+            className="text-white font-bold transition-all"
           >
-            Daftar sekarang
+            Register
           </Link>
         </p>
 

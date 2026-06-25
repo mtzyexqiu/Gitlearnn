@@ -3,6 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 
+const buildFileUrl = (fileUrl) => {
+  if (!fileUrl) return '';
+  if (fileUrl.startsWith('http')) return fileUrl;
+  return `${API.defaults.baseURL.replace(/\/api$/, '')}${fileUrl}`;
+};
+
 const OrderFilesPage = () => {
   const { orderId } = useParams();
   const { user } = useAuth();
@@ -187,7 +193,7 @@ const OrderFilesPage = () => {
                   {/* DOWNLOAD hanya kalau COMPLETED, selain itu hanya LIHAT */}
                   {user?.role === 'FREELANCER' || isCompleted ? (
                     <a
-                      href={file.fileUrl}
+                      href={buildFileUrl(file.fileUrl)}
                       download={file.fileName}
                       target="_blank"
                       rel="noreferrer"
@@ -197,7 +203,7 @@ const OrderFilesPage = () => {
                     </a>
                   ) : (
                     <button
-                      onClick={() => window.open(file.fileUrl, '_blank', 'noopener,noreferrer')}
+                      onClick={() => navigate(`/preview?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`)}
                       className="border border-zinc-700 text-gray-300 px-4 py-2 rounded-full text-xs hover:border-white hover:text-white transition"
                     >
                       👁️ Lihat
@@ -320,6 +326,8 @@ const OrderFilesPage = () => {
           </div>
         </div>
       )}
+
+
 
     </div>
   );
