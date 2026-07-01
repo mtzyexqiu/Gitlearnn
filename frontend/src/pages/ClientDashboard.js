@@ -91,7 +91,10 @@ const ClientDashboard = () => {
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-zinc-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
-          <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
+          <div className="flex items-center gap-3">
+            <img src="/logo192.png" alt="FreelanceHub" className="w-8 h-8 rounded-sm" />
+            <span className="text-2xl font-bold tracking-wider">GitLearn</span>
+          </div>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
             <button onClick={() => navigate('/topup')} title="Top Up" aria-label="Top Up" className="text-gray-400 hover:text-white text-sm transition p-1">

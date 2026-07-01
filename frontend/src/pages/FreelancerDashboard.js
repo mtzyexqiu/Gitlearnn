@@ -214,7 +214,7 @@ const handleOrderStatus = async (orderId, status) => {
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-zinc-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
-          <span className="text-2xl font-bold tracking-wider">FreelanceHub</span>
+          <span className="text-2xl font-bold tracking-wider">GitLearn</span>
           <div className="flex items-center gap-6">
             <span className="text-gray-400 text-sm">Halo, {user?.name}!</span>
             <button onClick={() => navigate('/messages')} className="relative text-xl hover:opacity-70 transition">
